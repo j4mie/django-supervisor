@@ -37,9 +37,12 @@ def get_merged_config(**options):
     combines them together based on priority, and returns the resulting
     configuration as a string.
     """
-    #  Find and load the containing project module.
-    #  This is assumed to be the top-level package containing settings module.
-    projdir = guess_project_dir()
+    #  Find and load the containing project module. This can be specified
+    # explicity using the --projdir option. Otherwise, we attempt to guess
+    # by looking for the manage.py file.
+    projdir = options.get('projdir')
+    if projdir is None:
+        projdir = guess_project_dir()
 
     #  Build the default template context variables.
     #  This is mostly useful information about the project and environment.
@@ -272,7 +275,7 @@ def guess_project_dir():
     if os.path.isfile(os.path.join(projdir,"manage.py")):
         return projdir
 
-    msg = "Project %s doesn't have a ./manage.py" % (projname,)
+    msg = "Unable to find a manage.py file for project %s. Try using the --projdir option" % (projname,)
     raise RuntimeError(msg)
 
 

@@ -190,7 +190,8 @@ conditionally switch processes on or off.  The template context for each
 configuration file contains the following variables:
 
     :PROJECT_DIR:          the top-level directory of your project (i.e. the
-                           directory containing your manage.py script).
+                           directory containing your manage.py script). You can
+                           override this using the --projdir option.
 
     :APP_DIR:              for app-provided config files, the top-level
                            directory containing the application code.

@@ -116,6 +116,14 @@ class Command(BaseCommand):
             dest="noreload",
             help="don't restart processes when code files change"
         ),
+        make_option("--projdir",None,
+            action="store",
+            dest="projdir",
+            help="django-supervisor will attempt to guess your project root"
+                 " based on the location of your manage.py file. If you have"
+                 " customised things, use this option to specify the project"
+                 " root"
+        ),
     )
 
     def run_from_argv(self,argv):
