@@ -116,6 +116,12 @@ class Command(BaseCommand):
             dest="noreload",
             help="don't restart processes when code files change"
         ),
+        make_option("--dump",None,
+            action="store_true",
+            dest="dump",
+            help="Dump the combined config file to stdout and exit. Useful"
+                 " for debugging."
+        ),
         make_option("--projdir",None,
             action="store",
             dest="projdir",
@@ -154,6 +160,12 @@ class Command(BaseCommand):
         #  We basically just construct the merged supervisord.conf file
         #  and forward it on to either supervisord or supervisorctl.
         cfg = get_merged_config(**options)
+
+        # If --dump was passed, just print the combined config file and exit
+        if options.get('dump'):
+            print cfg
+            return
+
         #  Due to some very nice engineering on behalf of supervisord authors,
         #  you can pass it a StringIO instance for the "-c" command-line
         #  option.  Saves us having to write the config to a tempfile.
