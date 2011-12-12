@@ -39,13 +39,8 @@ def get_merged_config(**options):
     """
     #  Find and load the containing project module.
     #  This is assumed to be the top-level package containing settings module.
-    #  If it doesn't contain a manage.py script, we're in trouble.
-    projname = settings.SETTINGS_MODULE.split(".",1)[0]
-    projmod = import_module(projname)
-    projdir = os.path.dirname(projmod.__file__)
-    if not os.path.isfile(os.path.join(projdir,"manage.py")):
-        msg = "Project %s doesn't have a ./manage.py" % (projname,)
-        raise RuntimeError(msg)
+    projdir = guess_project_dir()
+
     #  Build the default template context variables.
     #  This is mostly useful information about the project and environment.
     ctx = {
@@ -64,7 +59,7 @@ def get_merged_config(**options):
     data = render_config(DEFAULT_CONFIG,ctx)
     cfg.readfp(StringIO(data))
     #  Add in each app-specific file in turn.
-    for data in find_app_configs(ctx,projmod):
+    for data in find_app_configs(ctx):
         cfg.readfp(StringIO(data))
     #  Add in the project-specific config file.
     projcfg = os.path.join(projdir,CONFIG_FILE_NAME)
@@ -151,7 +146,7 @@ def render_config(data,ctx):
     return t.render(c).encode("ascii")
 
 
-def find_app_configs(ctx,projmod):
+def find_app_configs(ctx):
     """Generator yielding app-provided config file data.
 
     This function searches for supervisord config files within each of the
@@ -261,6 +256,24 @@ def rerender_options(options):
         else:
             args.append("--%s=%s" % (name,value))
     return " ".join(args)
+
+
+def guess_project_dir():
+    projname = settings.SETTINGS_MODULE.split(".",1)[0]
+    projmod = import_module(projname)
+    projdir = os.path.dirname(projmod.__file__)
+
+    if os.path.isfile(os.path.join(projdir,"manage.py")):
+        return projdir
+
+    # Try Django 1.4-style layout, where project module
+    # is contained within parent directory
+    projdir = os.path.abspath(os.path.join(projdir, os.path.pardir))
+    if os.path.isfile(os.path.join(projdir,"manage.py")):
+        return projdir
+
+    msg = "Project %s doesn't have a ./manage.py" % (projname,)
+    raise RuntimeError(msg)
 
 
 #  These are the default configuration options provided by djsupervisor.
